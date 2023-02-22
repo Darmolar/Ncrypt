@@ -3,23 +3,24 @@ import { View, Text, StyleSheet, KeyboardAvoidingView } from 'react-native'
 import { COLORS, assets, SHADOWS, SIZES, FONTS, titleSize } from '../../constants';
 import { TextInputField, RectButton, CircleButton, } from '../../components';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-// import { auth } from '../../firebase';
-import { getAuth, onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
+import { authUser } from '../../firebase';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
 
-const auth = getAuth();
+// const auth = authUser();
 
 export default function Register({ navigation }) {
     const [email, setEmail] = useState('');
     const [paasword, setPaasword] = useState('');
     const [loading, setLoading] = useState(false)
-    // const [user, setUser] = useState(User);
+    const [user, setUser] = useState(User);
 
     useEffect(() => {
-        const unsubscribeFromAuthStatuChanged = onAuthStateChanged(auth, (user) => {
+        const unsubscribeFromAuthStatuChanged = onAuthStateChanged(authUser, (user) => {
             if (user) {
                 // User is signed in, see docs for a list of available properties
                 // https://firebase.google.com/docs/reference/js/firebase.User
                 setUser(user);
+                console.log(user)
             } else {
                 // User is signed out
                 setUser(undefined);
@@ -30,13 +31,15 @@ export default function Register({ navigation }) {
     }, []);
 
     const _registerAccount = async () => {
-        if (email && paasword) {
-            auth
-                .createUserWithEmailAndPassword(email, password)
+        if (email && paasword) { 
+            createUserWithEmailAndPassword(authUser, email, paasword)
                 .then(userCredentials => {
-                    console.log(userCredentials)
+                    // console.log(userCredentials);
+                    navigation.navigate('Home');
                 })
                 .catch(error => console.log(error))
+        } else {
+            alert('All Fields are required');
         }
     }
 
@@ -72,7 +75,7 @@ export default function Register({ navigation }) {
                         buttonText="Register"
                         marginTop={20}
                         loadingButton={loading}
-                        onPress={() => _registerAccount()}
+                        handlePress={_registerAccount}
                     />
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate('Login')}>
